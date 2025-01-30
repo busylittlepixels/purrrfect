@@ -3,9 +3,13 @@ import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Tag as TagIcon } from "lucide-react";
+import { Calendar, TagIcon } from 'lucide-react';
 import { format } from "date-fns";
 import { articles } from "../../[slug]/data";
+
+interface PageProps {
+  params: Promise<{ tag: string }>;
+}
 
 export async function generateStaticParams() {
   const tags = Array.from(new Set(articles.flatMap(article => article.tags.map(tag => tag.toLowerCase()))));
@@ -14,18 +18,20 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: { tag: string } }): Promise<Metadata> {
-  const tag = params.tag.charAt(0).toUpperCase() + params.tag.slice(1);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { tag } = await params;
+  const formattedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
   
   return {
-    title: `${tag} Articles - Purrrfect Magazine`,
+    title: `${formattedTag} Articles - Purrrfect Magazine`,
     description: `Read our latest articles tagged with ${tag.toLowerCase()}`,
   };
 }
 
-export default function TagPage({ params }: { params: { tag: string } }) {
+export default async function TagPage({ params }: PageProps) {
+  const { tag } = await params;
   const tagArticles = articles.filter(
-    article => article.tags.some(tag => tag.toLowerCase() === params.tag.toLowerCase())
+    article => article.tags.some(t => t.toLowerCase() === tag.toLowerCase())
   );
 
   return (
@@ -35,10 +41,10 @@ export default function TagPage({ params }: { params: { tag: string } }) {
         <header className="mb-12">
           <div className="flex items-center gap-2 mb-4">
             <TagIcon className="h-6 w-6" />
-            <h1 className="text-4xl font-bold">{params.tag}</h1>
+            <h1 className="text-4xl font-bold">{tag}</h1>
           </div>
           <p className="text-xl text-muted-foreground">
-            Articles tagged with "{params.tag}"
+            Articles tagged with "{tag}"
           </p>
         </header>
 
@@ -47,7 +53,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
             <Card key={article.slug} className="group cursor-pointer">
               <div className="aspect-[3/2] relative overflow-hidden">
                 <img
-                  src={article.image}
+                  src={article.image || "/placeholder.svg"}
                   alt={article.title}
                   className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                 />
@@ -67,12 +73,12 @@ export default function TagPage({ params }: { params: { tag: string } }) {
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    {format(article.publishedAt, "MMMM d, yyyy")}
+                    {format(new Date(article.publishedAt), "MMMM d, yyyy")}
                   </div>
                   <div className="flex gap-2">
-                    {article.tags.map(tag => (
-                      <Badge key={tag} variant="secondary">
-                        {tag}
+                    {article.tags.map(t => (
+                      <Badge key={t} variant="secondary">
+                        {t}
                       </Badge>
                     ))}
                   </div>

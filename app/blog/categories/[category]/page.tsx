@@ -3,29 +3,37 @@ import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight } from 'lucide-react';
 import { format } from "date-fns";
 import { articles } from "../../[slug]/data";
 
-export async function generateStaticParams() {
+interface PageProps {
+  params: Promise<{
+    category: string;
+  }>;
+}
+
+export async function generateStaticParams(): Promise<{ category: string }[]> {
   const categories = Array.from(new Set(articles.map(article => article.category.toLowerCase())));
   return categories.map((category) => ({
     category,
   }));
 }
 
-export async function generateMetadata({ params }: { params: { category: string } }): Promise<Metadata> {
-  const category = params.category.charAt(0).toUpperCase() + params.category.slice(1);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { category } = await params;
+  const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
   
   return {
-    title: `${category} Articles - Purrrfect Magazine`,
+    title: `${formattedCategory} Articles - Purrrfect Magazine`,
     description: `Read our latest articles about ${category.toLowerCase()}`,
   };
 }
 
-export default function CategoryPage({ params }: { params: { category: string } }) {
+export default async function CategoryPage({ params }: PageProps) {
+  const { category } = await params;
   const categoryArticles = articles.filter(
-    article => article.category.toLowerCase() === params.category.toLowerCase()
+    article => article.category.toLowerCase() === category.toLowerCase()
   );
 
   return (
@@ -33,9 +41,9 @@ export default function CategoryPage({ params }: { params: { category: string } 
       <Navigation />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <header className="mb-12">
-          <h1 className="text-4xl font-bold mb-4">{params.category}</h1>
+          <h1 className="text-4xl font-bold mb-4">{category}</h1>
           <p className="text-xl text-muted-foreground">
-            Articles about {params.category.toLowerCase()}
+            Articles about {category.toLowerCase()}
           </p>
         </header>
 
@@ -44,7 +52,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
             <Card key={article.slug} className="group cursor-pointer">
               <div className="aspect-[3/2] relative overflow-hidden">
                 <img
-                  src={article.image}
+                  src={article.image || "/placeholder.svg"}
                   alt={article.title}
                   className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                 />
@@ -64,7 +72,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    {format(article.publishedAt, "MMMM d, yyyy")}
+                    {format(new Date(article.publishedAt), "MMMM d, yyyy")}
                   </div>
                   <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </div>

@@ -37,7 +37,7 @@ export function Hero({ parallaxOffset }: HeroProps) {
               <Button size="lg" className="mr-4">Shop Now</Button>
             </Link>
             <Link href="/blog">
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-black">
+              <Button size="lg" variant="outline" className="text-black border-white hover:bg-white hover:text-black">
                 Read Articles
               </Button>
             </Link>

@@ -3,23 +3,23 @@ import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart } from "lucide-react";
+import { Star, Heart, ShoppingCart } from 'lucide-react';
 import { products } from "../../data";
 
-type Props = {
-  params: { id: string }
+interface PageProps {
+  params: Promise<{
+    id: string;
+  }>;
 }
 
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ id: string }[]> {
   return products.map((product) => ({
     id: product.id.toString(),
   }));
 }
 
-export async function generateMetadata(
-  { params }: Props
-): Promise<Metadata> {
-  const id = params.id;
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
   const product = products.find(p => p.id.toString() === id);
   
   if (!product) {
@@ -34,13 +34,13 @@ export async function generateMetadata(
     openGraph: {
       title: `${product.name} - Purrrfect Store`,
       description: product.description,
-      images: [product.image],
+      images: [{ url: product.image }],
     },
   };
 }
 
-export default async function ProductPage({ params }: Props) {
-  const id = params.id;
+export default async function ProductPage({ params }: PageProps) {
+  const { id } = await params;
   const product = products.find(p => p.id.toString() === id);
 
   if (!product) {
@@ -63,7 +63,7 @@ export default async function ProductPage({ params }: Props) {
           {/* Product Image */}
           <div className="relative aspect-square rounded-lg overflow-hidden">
             <img
-              src={product.image}
+              src={product.image || "/placeholder.svg"}
               alt={product.name}
               className="w-full h-full object-cover"
             />

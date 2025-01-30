@@ -5,29 +5,37 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { products, categories } from "../data";
 
-export async function generateStaticParams() {
+interface PageProps {
+  params: Promise<{
+    category: string;
+  }>;
+}
+
+export async function generateStaticParams(): Promise<{ category: string }[]> {
   return categories.map((category) => ({
     category: category.toLowerCase(),
   }));
 }
 
-export async function generateMetadata({ params }: { params: { category: string } }): Promise<Metadata> {
-  const category = params.category.charAt(0).toUpperCase() + params.category.slice(1);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { category } = await params;
+  const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
   
   return {
-    title: `${category} - Purrrfect Store`,
+    title: `${formattedCategory} - Purrrfect Store`,
     description: `Shop our collection of ${category.toLowerCase()} products for cats`,
     openGraph: {
-      title: `${category} - Purrrfect Store`,
+      title: `${formattedCategory} - Purrrfect Store`,
       description: `Shop our collection of ${category.toLowerCase()} products for cats`,
     },
   };
 }
 
-export default function CategoryPage({ params }: { params: { category: string } }) {
-  const categoryName = params.category.charAt(0).toUpperCase() + params.category.slice(1);
+export default async function CategoryPage({ params }: PageProps) {
+  const { category } = await params;
+  const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
   const categoryProducts = products.filter(
-    product => product.category.toLowerCase() === params.category.toLowerCase()
+    product => product.category.toLowerCase() === category.toLowerCase()
   );
 
   return (
@@ -46,7 +54,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
             <Card key={product.id} className="group overflow-hidden">
               <div className="aspect-square relative overflow-hidden">
                 <img
-                  src={product.image}
+                  src={product.image || "/placeholder.svg"}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
